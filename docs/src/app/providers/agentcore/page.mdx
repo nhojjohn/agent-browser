@@ -33,6 +33,7 @@ The `-p` flag takes precedence over `AGENT_BROWSER_PROVIDER`.
     <tr><td><code>AGENTCORE_BROWSER_ID</code></td><td>Browser identifier</td><td><code>aws.browser.v1</code></td></tr>
     <tr><td><code>AGENTCORE_PROFILE_ID</code></td><td>Browser profile for persistent state (cookies, localStorage)</td><td>(none)</td></tr>
     <tr><td><code>AGENTCORE_PROXY_CONFIG</code></td><td>JSON proxy configuration for the browser session</td><td>(none)</td></tr>
+    <tr><td><code>AGENTCORE_ENTERPRISE_POLICIES</code></td><td>JSON array of enterprise policy configurations</td><td>(none)</td></tr>
     <tr><td><code>AGENTCORE_SESSION_TIMEOUT</code></td><td>Session timeout in seconds</td><td><code>3600</code></td></tr>
     <tr><td><code>AWS_PROFILE</code></td><td>AWS CLI profile for credential resolution</td><td><code>default</code></td></tr>
     <tr><td><code>AWS_ACCESS_KEY_ID</code></td><td>AWS access key (checked before AWS CLI fallback)</td><td>(none)</td></tr>
@@ -85,6 +86,27 @@ agent-browser -p agentcore open https://example.com
 ```
 
 The proxy configuration is passed directly to the AgentCore session API. Credentials can reference AWS Secrets Manager ARNs for secure authentication.
+
+## Enterprise Policies
+
+Use `AGENTCORE_ENTERPRISE_POLICIES` to apply enterprise browser policies stored in S3. The value must be a JSON array:
+
+```bash
+export AGENTCORE_ENTERPRISE_POLICIES='[
+  {
+    "type": "RECOMMENDED",
+    "location": {
+      "s3": {
+        "bucket": "my-policy-bucket",
+        "prefix": "policies/recommended-policies.json"
+      }
+    }
+  }
+]'
+agent-browser -p agentcore open https://example.com
+```
+
+Policies are applied at session creation time and control browser behavior, security settings, and feature availability. The browser session must have IAM permissions to read from the specified S3 bucket.
 
 ## Live View
 

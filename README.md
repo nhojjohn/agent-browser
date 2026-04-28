@@ -1510,6 +1510,7 @@ Optional configuration via environment variables:
 | `AGENTCORE_BROWSER_ID`     | Browser identifier                                                   | `aws.browser.v1` |
 | `AGENTCORE_PROFILE_ID`     | Browser profile for persistent state (cookies, localStorage)         | (none)           |
 | `AGENTCORE_PROXY_CONFIG`   | JSON proxy configuration for the browser session                     | (none)           |
+| `AGENTCORE_ENTERPRISE_POLICIES` | JSON array of enterprise policy configurations                  | (none)           |
 | `AGENTCORE_SESSION_TIMEOUT`| Session timeout in seconds                                           | `3600`           |
 | `AWS_PROFILE`              | AWS CLI profile for credential resolution                            | `default`        |
 
@@ -1535,6 +1536,23 @@ export AGENTCORE_PROXY_CONFIG='{
     }
   }]
 }'
+agent-browser -p agentcore open https://example.com
+```
+
+**Enterprise policies:** Use `AGENTCORE_ENTERPRISE_POLICIES` to apply enterprise browser policies from S3:
+
+```bash
+export AGENTCORE_ENTERPRISE_POLICIES='[
+  {
+    "type": "RECOMMENDED",
+    "location": {
+      "s3": {
+        "bucket": "my-policy-bucket",
+        "prefix": "policies/recommended-policies.json"
+      }
+    }
+  }
+]'
 agent-browser -p agentcore open https://example.com
 ```
 

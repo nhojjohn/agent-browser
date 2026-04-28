@@ -454,6 +454,21 @@ mod agentcore {
                 }
             }
         }
+        if let Ok(enterprise_policies) = env::var("AGENTCORE_ENTERPRISE_POLICIES") {
+            if !enterprise_policies.is_empty() {
+                match serde_json::from_str::<serde_json::Value>(&enterprise_policies) {
+                    Ok(policies_json) => {
+                        body_json.as_object_mut().unwrap().insert(
+                            "enterprisePolicies".to_string(),
+                            policies_json,
+                        );
+                    }
+                    Err(e) => {
+                        return Err(format!("Invalid AGENTCORE_ENTERPRISE_POLICIES JSON: {}", e));
+                    }
+                }
+            }
+        }
         let body = serde_json::to_string(&body_json)
             .map_err(|e| format!("Failed to serialize request body: {}", e))?;
 
@@ -844,6 +859,32 @@ mod tests {
         assert!(result.is_ok());
         let parsed = result.unwrap();
         assert!(parsed.get("proxies").is_some());
+
+        // Test invalid JSON
+        let invalid_json = "not valid json";
+        let result = serde_json::from_str::<serde_json::Value>(invalid_json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_agentcore_enterprise_policies_parsing() {
+        // Test valid JSON
+        let valid_json = r#"[
+            {
+                "type": "RECOMMENDED",
+                "location": {
+                    "s3": {
+                        "bucket": "my-policy-bucket",
+                        "prefix": "policies/recommended-policies.json"
+                    }
+                }
+            }
+        ]"#;
+        let result = serde_json::from_str::<serde_json::Value>(valid_json);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert!(parsed.is_array());
+        assert_eq!(parsed.as_array().unwrap().len(), 1);
 
         // Test invalid JSON
         let invalid_json = "not valid json";

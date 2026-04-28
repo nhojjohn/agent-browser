@@ -38,6 +38,7 @@ agent-browser close
 | `AGENTCORE_BROWSER_ID` | Browser identifier | `aws.browser.v1` |
 | `AGENTCORE_PROFILE_ID` | Persistent browser profile (cookies, localStorage) | (none) |
 | `AGENTCORE_PROXY_CONFIG` | JSON proxy configuration for the browser session | (none) |
+| `AGENTCORE_ENTERPRISE_POLICIES` | JSON array of enterprise policy configurations | (none) |
 | `AGENTCORE_SESSION_TIMEOUT` | Session timeout in seconds | `3600` |
 | `AWS_PROFILE` | AWS CLI profile for credential resolution | `default` |
 
@@ -82,6 +83,27 @@ agent-browser -p agentcore open https://example.com
 ```
 
 The proxy configuration is passed directly to the AgentCore session API. Credentials can reference AWS Secrets Manager ARNs for secure authentication.
+
+## Enterprise Policies
+
+Use `AGENTCORE_ENTERPRISE_POLICIES` to apply enterprise browser policies stored in S3. The value must be a JSON array:
+
+```bash
+export AGENTCORE_ENTERPRISE_POLICIES='[
+  {
+    "type": "RECOMMENDED",
+    "location": {
+      "s3": {
+        "bucket": "my-policy-bucket",
+        "prefix": "policies/recommended-policies.json"
+      }
+    }
+  }
+]'
+agent-browser -p agentcore open https://example.com
+```
+
+Policies are applied at session creation time and control browser behavior, security settings, and feature availability.
 
 ## Live View
 
