@@ -34,6 +34,7 @@ The `-p` flag takes precedence over `AGENT_BROWSER_PROVIDER`.
     <tr><td><code>AGENTCORE_PROFILE_ID</code></td><td>Browser profile for persistent state (cookies, localStorage)</td><td>(none)</td></tr>
     <tr><td><code>AGENTCORE_PROXY_CONFIG</code></td><td>JSON proxy configuration for the browser session</td><td>(none)</td></tr>
     <tr><td><code>AGENTCORE_ENTERPRISE_POLICIES</code></td><td>JSON array of enterprise policy configurations</td><td>(none)</td></tr>
+    <tr><td><code>AGENTCORE_EXTENSION_CONFIG</code></td><td>JSON browser extension configuration from S3</td><td>(none)</td></tr>
     <tr><td><code>AGENTCORE_SESSION_TIMEOUT</code></td><td>Session timeout in seconds</td><td><code>3600</code></td></tr>
     <tr><td><code>AWS_PROFILE</code></td><td>AWS CLI profile for credential resolution</td><td><code>default</code></td></tr>
     <tr><td><code>AWS_ACCESS_KEY_ID</code></td><td>AWS access key (checked before AWS CLI fallback)</td><td>(none)</td></tr>
@@ -107,6 +108,36 @@ agent-browser -p agentcore open https://example.com
 ```
 
 Policies are applied at session creation time and control browser behavior, security settings, and feature availability. The browser session must have IAM permissions to read from the specified S3 bucket.
+
+## Browser Extensions
+
+Use `AGENTCORE_EXTENSION_CONFIG` to load browser extensions from S3. The value must be valid JSON:
+
+```bash
+export AGENTCORE_EXTENSION_CONFIG='{
+  "extensions": [
+    {
+      "s3": {
+        "bucket": "my-extension-bucket",
+        "key": "extensions/my-extension.crx"
+      }
+    }
+  ]
+}'
+agent-browser -p agentcore open https://example.com
+```
+
+<table>
+  <thead>
+    <tr><th>Scope</th><th>Configuration</th><th>Use Case</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Local browser</td><td><code>--extension</code> flag</td><td>Load extensions from local filesystem</td></tr>
+    <tr><td>AgentCore browser</td><td><code>AGENTCORE_EXTENSION_CONFIG</code></td><td>Load extensions from S3</td></tr>
+  </tbody>
+</table>
+
+Extensions must be packaged as `.crx` files and uploaded to S3. The browser session must have IAM permissions to read from the specified S3 bucket.
 
 ## Live View
 

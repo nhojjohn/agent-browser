@@ -469,6 +469,21 @@ mod agentcore {
                 }
             }
         }
+        if let Ok(extension_config) = env::var("AGENTCORE_EXTENSION_CONFIG") {
+            if !extension_config.is_empty() {
+                match serde_json::from_str::<serde_json::Value>(&extension_config) {
+                    Ok(extension_json) => {
+                        body_json.as_object_mut().unwrap().insert(
+                            "extensionConfiguration".to_string(),
+                            extension_json,
+                        );
+                    }
+                    Err(e) => {
+                        return Err(format!("Invalid AGENTCORE_EXTENSION_CONFIG JSON: {}", e));
+                    }
+                }
+            }
+        }
         let body = serde_json::to_string(&body_json)
             .map_err(|e| format!("Failed to serialize request body: {}", e))?;
 
@@ -885,6 +900,32 @@ mod tests {
         let parsed = result.unwrap();
         assert!(parsed.is_array());
         assert_eq!(parsed.as_array().unwrap().len(), 1);
+
+        // Test invalid JSON
+        let invalid_json = "not valid json";
+        let result = serde_json::from_str::<serde_json::Value>(invalid_json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_agentcore_extension_config_parsing() {
+        // Test valid JSON
+        let valid_json = r#"{
+            "extensions": [
+                {
+                    "s3": {
+                        "bucket": "my-extension-bucket",
+                        "key": "extensions/my-extension.crx"
+                    }
+                }
+            ]
+        }"#;
+        let result = serde_json::from_str::<serde_json::Value>(valid_json);
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+        assert!(parsed.get("extensions").is_some());
+        let extensions = parsed.get("extensions").unwrap().as_array().unwrap();
+        assert_eq!(extensions.len(), 1);
 
         // Test invalid JSON
         let invalid_json = "not valid json";
