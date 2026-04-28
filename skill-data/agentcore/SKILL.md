@@ -37,6 +37,7 @@ agent-browser close
 | `AGENTCORE_REGION` | AWS region | `us-east-1` |
 | `AGENTCORE_BROWSER_ID` | Browser identifier | `aws.browser.v1` |
 | `AGENTCORE_PROFILE_ID` | Persistent browser profile (cookies, localStorage) | (none) |
+| `AGENTCORE_PROXY_CONFIG` | JSON proxy configuration for the browser session | (none) |
 | `AGENTCORE_SESSION_TIMEOUT` | Session timeout in seconds | `3600` |
 | `AWS_PROFILE` | AWS CLI profile for credential resolution | `default` |
 
@@ -56,6 +57,31 @@ agent-browser close
 # Future runs: already authenticated
 AGENTCORE_PROFILE_ID=my-app agent-browser -p agentcore open https://app.example.com/dashboard
 ```
+
+## Proxy Configuration
+
+Use `AGENTCORE_PROXY_CONFIG` to configure proxy settings with authentication for the cloud browser session. The value must be valid JSON matching the AgentCore proxy configuration schema.
+
+**Important:** The `--proxy` flag applies only to local Chrome/Lightpanda browsers. For AgentCore, use `AGENTCORE_PROXY_CONFIG` to configure the remote browser's proxy settings.
+
+```bash
+export AGENTCORE_PROXY_CONFIG='{
+  "proxies": [{
+    "externalProxy": {
+      "server": "your-proxy.com",
+      "port": 8080,
+      "credentials": {
+        "basicAuth": {
+          "secretArn": "arn:aws:secretsmanager:region:account:secret:name"
+        }
+      }
+    }
+  }]
+}'
+agent-browser -p agentcore open https://example.com
+```
+
+The proxy configuration is passed directly to the AgentCore session API. Credentials can reference AWS Secrets Manager ARNs for secure authentication.
 
 ## Live View
 
